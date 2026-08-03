@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { LogoutButton } from "@/components/layout/LogoutButton";
 
 interface NavItem {
   href: string;
@@ -18,16 +19,19 @@ export function AppShell({ title, subtitle, nav, children, currentPath }: AppShe
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
+        <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
           <div>
             <Link href="/" className="text-lg font-bold text-emerald-700">
               Equivalente
             </Link>
             <p className="text-xs text-slate-500">Más opciones sin salirte del plan.</p>
           </div>
-          <div className="text-right">
-            <p className="text-sm font-medium">{title}</p>
-            {subtitle && <p className="text-xs text-slate-500">{subtitle}</p>}
+          <div className="flex items-center gap-2 text-right">
+            <div>
+              <p className="text-sm font-medium">{title}</p>
+              {subtitle && <p className="text-xs text-slate-500">{subtitle}</p>}
+            </div>
+            <LogoutButton />
           </div>
         </div>
         <nav className="mx-auto flex max-w-3xl gap-1 overflow-x-auto px-4 pb-2">

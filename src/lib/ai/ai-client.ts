@@ -35,6 +35,12 @@ export async function generateWithAi(request: AiRequest): Promise<AiResponse> {
     );
   }
 
+  if (result.mode === "queued") {
+    throw new Error(
+      `La tarea quedó en cola (job ${result.jobId}). Consulta /api/ai/jobs/${result.jobId}/status.`
+    );
+  }
+
   return {
     output: result.output as Record<string, unknown>,
     model: result.metadata?.model as string | undefined,

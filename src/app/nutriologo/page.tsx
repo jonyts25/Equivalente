@@ -2,7 +2,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { DisclaimerBanner } from "@/components/layout/DisclaimerBanner";
-import { LogoutButton } from "@/components/layout/LogoutButton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCurrentProfile } from "@/lib/auth/session";
 import { getNutritionistByProfileId } from "@/lib/data/patient-context";
@@ -28,7 +27,6 @@ export default async function NutriologoDashboard() {
   return (
     <AppShell title="Nutriólogo" subtitle={profile.full_name ?? ""} nav={NUTRIOLOGO_NAV} currentPath="/nutriologo">
       <DisclaimerBanner />
-      <div className="flex justify-end"><LogoutButton /></div>
       <Card>
         <CardHeader><CardTitle className="text-base">Tus pacientes</CardTitle></CardHeader>
         <CardContent>

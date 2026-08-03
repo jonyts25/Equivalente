@@ -40,6 +40,10 @@ function isContextualAiApi(pathname: string): boolean {
   );
 }
 
+function isAiJobsApi(pathname: string): boolean {
+  return pathname.startsWith("/api/ai/jobs/");
+}
+
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
@@ -133,6 +137,11 @@ export async function middleware(request: NextRequest) {
     if (role === "patient") {
       return NextResponse.redirect(new URL(roleHome(role), request.url));
     }
+    return supabaseResponse;
+  }
+
+  // Authenticated polling for queued AI jobs (any role; route enforces ownership).
+  if (isAiJobsApi(pathname)) {
     return supabaseResponse;
   }
 

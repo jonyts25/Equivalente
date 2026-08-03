@@ -1,4 +1,4 @@
-export type AiProvider = "manual_chatgpt" | "ollama_local" | "openai_api";
+export type AiProvider = "manual_chatgpt" | "ollama_local" | "openai_api" | "ollama_queue";
 
 export type AiTaskType =
   | "parse_diet"
@@ -21,6 +21,12 @@ export type AiModeResult =
       output: unknown;
       taskType: AiTaskType;
       provider: AiProvider;
+      metadata?: Record<string, unknown>;
+    }
+  | {
+      mode: "queued";
+      jobId: string;
+      taskType: AiTaskType;
       metadata?: Record<string, unknown>;
     };
 

@@ -1,6 +1,11 @@
 import type { AiProvider } from "./types";
 
-const ALLOWED_PROVIDERS: AiProvider[] = ["manual_chatgpt", "ollama_local", "openai_api"];
+const ALLOWED_PROVIDERS: AiProvider[] = [
+  "manual_chatgpt",
+  "ollama_local",
+  "openai_api",
+  "ollama_queue",
+];
 
 export function getActiveProvider(): AiProvider {
   const provider = process.env.AI_PROVIDER?.trim();
@@ -26,6 +31,7 @@ export function getChatGptUrl(): string {
 
 export function assertProviderConfig(provider: AiProvider = getActiveProvider()): void {
   if (provider === "manual_chatgpt") return;
+  if (provider === "ollama_queue") return;
 
   if (provider === "ollama_local") {
     if (!process.env.OLLAMA_BASE_URL?.trim()) {

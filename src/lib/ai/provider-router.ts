@@ -2,6 +2,7 @@ import type { AiProvider, AiRequestContext, AiModeResult } from "./types";
 import { getActiveProvider } from "./config";
 import { runManualChatGptTask } from "./providers/manual-chatgpt-provider";
 import { runOllamaTask } from "./providers/ollama-provider";
+import { runOllamaQueueTask } from "./providers/ollama-queue-provider";
 import { runOpenAiTask } from "./providers/openai-provider";
 
 /**
@@ -24,6 +25,8 @@ async function routeToProvider(
       return runOllamaTask(context);
     case "openai_api":
       return runOpenAiTask(context);
+    case "ollama_queue":
+      return runOllamaQueueTask(context);
     default:
       throw new Error(`Proveedor de IA no soportado: ${provider}`);
   }

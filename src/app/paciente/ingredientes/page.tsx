@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { AppShell } from "@/components/layout/AppShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ManualMenuGenerator } from "@/components/menus/ManualMenuGenerator";
+import { MenuGenerator } from "@/components/menus/MenuGenerator";
 import { requirePatientContext } from "@/lib/auth/patient-session";
 import { getPatientPromptContext } from "@/lib/data/patient-context";
 import { PACIENTE_NAV } from "@/lib/navigation";
@@ -15,7 +15,7 @@ export default async function PacienteIngredientesPage() {
       <Card>
         <CardHeader><CardTitle className="text-base">Menú con ingredientes disponibles</CardTitle></CardHeader>
         <CardContent>
-          <ManualMenuGenerator
+          <MenuGenerator
             patientId={patient.id}
             task="ingredients_menu"
             title="Menú con ingredientes"
