@@ -85,3 +85,37 @@ exista.
 
 No crear tablas, componentes, ni migraciones para nada de esto todavía —
 es únicamente documentación para revisar más adelante.
+
+## Notificaciones push (recordatorios de comidas)
+
+Requiere que la app esté instalada como PWA para habilitar push. No
+implementar aún — solo documentar posibles tipos de notificación:
+
+1. Recordatorio simple por horario: si el paciente registró que
+   normalmente cena a cierta hora, mandar una notificación ~1 hora antes
+   recordando qué le toca cenar ese día según su menú aprobado.
+2. Confirmación de lista de super: si el paciente marca que ya compró lo
+   de la lista del súper, la app puede sugerir qué preparar con lo que ya
+   tiene.
+3. Alternativa más simple al punto 2: mandar el recordatorio de todos
+   modos aunque no haya confirmación de compra, solo como recordatorio
+   pasivo.
+
+Fuera de alcance explícitamente: integración con refrigeradores
+inteligentes o cualquier hardware IoT — mencionado como idea pero
+descartado por ahora.
+
+No crear tablas, componentes, service workers ni nada de push todavía —
+solo documentación.
+
+## Responsabilidad del usuario en flujo manual ChatGPT
+
+Cuando el paciente usa el flujo de IA manual con ChatGPT (prompt generado
+en la app → copia → ChatGPT → pega respuesta) y genera o sigue una dieta /
+menú autogenerado fuera de la app sin que esa propuesta haya sido
+revisada y aprobada por su nutriólogo(a), el usuario es responsable de
+los resultados de actuar sin supervisión profesional.
+
+Pendiente revisar bien: copy legal/disclaimer en UI, cuándo se muestra,
+y cómo se relaciona con menús pendientes vs aprobados. No implementar
+aún — solo dejar documentado.
