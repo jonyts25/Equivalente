@@ -21,11 +21,21 @@ export async function getPatientPromptContext(patientId: string) {
     .eq("status", "active")
     .maybeSingle();
 
-  const { data: equivalences } = await supabase
-    .from("equivalence_groups")
-    .select("*, equivalence_items(*, food_items(name))")
-    .eq("patient_id", patientId)
-    .eq("active", true);
+  // Equivalencias generales de la nutrióloga (patient_id null), no por paciente.
+  let equivalences: Array<{
+    name: string;
+    equivalence_items: Array<{ portion_label: string; food_items: { name: string } }> | null;
+  }> | null = null;
+
+  if (patient?.nutritionist_id) {
+    const { data } = await supabase
+      .from("equivalence_groups")
+      .select("*, equivalence_items(*, food_items(name))")
+      .eq("nutritionist_id", patient.nutritionist_id)
+      .is("patient_id", null)
+      .eq("active", true);
+    equivalences = data;
+  }
 
   const { data: preferences } = await supabase
     .from("patient_food_preferences")

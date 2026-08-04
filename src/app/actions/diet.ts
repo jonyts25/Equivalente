@@ -100,7 +100,7 @@ export async function parseAndSaveDiet(input: {
 }
 
 export async function saveEquivalenceGroup(input: {
-  patientId: string;
+  patientId?: string;
   name: string;
   category: string;
   notes?: string;
@@ -112,11 +112,15 @@ export async function saveEquivalenceGroup(input: {
 
   const supabase = await createClient();
   const nutritionist = await getNutritionistByProfileId(profile.id);
+  if (!nutritionist) {
+    throw new Error("No hay registro de nutrióloga vinculado a tu cuenta.");
+  }
+
   const { data, error } = await supabase
     .from("equivalence_groups")
     .insert({
-      patient_id: input.patientId,
-      nutritionist_id: nutritionist?.id ?? null,
+      patient_id: input.patientId ?? null,
+      nutritionist_id: nutritionist.id,
       name: input.name,
       category: input.category,
       notes: input.notes ?? null,
@@ -126,7 +130,10 @@ export async function saveEquivalenceGroup(input: {
     .single();
 
   if (error) throw new Error(error.message);
-  revalidatePath(`/nutriologo/pacientes/${input.patientId}/equivalencias`);
+  if (input.patientId) {
+    revalidatePath(`/nutriologo/pacientes/${input.patientId}/equivalencias`);
+  }
+  revalidatePath("/nutriologo/equivalencias");
   return data;
 }
 

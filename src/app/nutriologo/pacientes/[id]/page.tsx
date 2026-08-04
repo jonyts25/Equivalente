@@ -8,7 +8,6 @@ import { createClient } from "@/lib/supabase/server";
 
 const LINKS = (id: string) => [
   { href: `/nutriologo/pacientes/${id}/dieta`, label: "Dieta" },
-  { href: `/nutriologo/pacientes/${id}/equivalencias`, label: "Equivalencias" },
   { href: `/nutriologo/pacientes/${id}/preferencias`, label: "Preferencias" },
   { href: `/nutriologo/pacientes/${id}/gustos-prohibidos`, label: "Gustos prohibidos" },
   { href: `/nutriologo/pacientes/${id}/menus`, label: "Menús" },

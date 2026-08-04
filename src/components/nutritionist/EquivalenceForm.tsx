@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 interface EquivalenceFormProps {
-  patientId: string;
+  patientId?: string;
 }
 
 export function EquivalenceForm({ patientId }: EquivalenceFormProps) {
@@ -18,7 +18,11 @@ export function EquivalenceForm({ patientId }: EquivalenceFormProps) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     try {
-      await saveEquivalenceGroup({ patientId, name, category });
+      await saveEquivalenceGroup({
+        ...(patientId ? { patientId } : {}),
+        name,
+        category,
+      });
       setMessage("Grupo creado.");
       setName("");
     } catch (err) {
@@ -30,7 +34,13 @@ export function EquivalenceForm({ patientId }: EquivalenceFormProps) {
     <form onSubmit={handleSubmit} className="space-y-3">
       <div className="space-y-2">
         <Label htmlFor="eq-name">Nombre del grupo</Label>
-        <Input id="eq-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Ej: Proteína desayuno" required />
+        <Input
+          id="eq-name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Ej: Proteína desayuno"
+          required
+        />
       </div>
       <div className="space-y-2">
         <Label htmlFor="eq-cat">Categoría</Label>
