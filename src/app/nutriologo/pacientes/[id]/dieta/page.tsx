@@ -36,7 +36,11 @@ export default async function PacienteDietaPage({ params }: { params: Promise<{ 
       <Card>
         <CardHeader><CardTitle className="text-base">Cargar / estructurar dieta</CardTitle></CardHeader>
         <CardContent>
-          <DietEditor patientId={id} initialRawText={diet?.raw_text ?? ""} />
+          <DietEditor
+            patientId={id}
+            initialRawText={diet?.raw_text ?? ""}
+            initialTitle={diet?.title ?? ""}
+          />
         </CardContent>
       </Card>
       <Link href={`/nutriologo/pacientes/${id}`} className="text-sm text-emerald-700 underline">← Perfil</Link>

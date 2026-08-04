@@ -31,23 +31,43 @@ function isTerminalError(status: string): boolean {
   return status === "error" || status === "failed";
 }
 
+function extractJsonCandidate(text: string): string {
+  const trimmed = text.trim();
+  const fenceMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if (fenceMatch) return fenceMatch[1].trim();
+  const firstBrace = trimmed.indexOf("{");
+  const lastBrace = trimmed.lastIndexOf("}");
+  if (firstBrace >= 0 && lastBrace > firstBrace) {
+    return trimmed.slice(firstBrace, lastBrace + 1);
+  }
+  return trimmed;
+}
+
 function parseMealOptionsPreview(
   preview: Record<string, unknown>
 ): MealOptionsResponse | null {
   const direct = mealOptionsResponseSchema.safeParse(preview);
   if (direct.success) return direct.data;
 
-  // Worker may wrap the payload (e.g. { result: {...} } or JSON string fields).
-  for (const key of ["result", "data", "content", "raw"] as const) {
+  // Worker may wrap the payload (e.g. { texto, modelo_usado } or other keys).
+  for (const key of ["result", "data", "content", "raw", "texto"] as const) {
     const value = preview[key];
     if (typeof value === "string") {
       try {
-        const parsed = mealOptionsResponseSchema.safeParse(JSON.parse(value));
+        const parsed = mealOptionsResponseSchema.safeParse(
+          JSON.parse(extractJsonCandidate(value))
+        );
         if (parsed.success) return parsed.data;
       } catch {
         /* ignore */
       }
     } else if (value && typeof value === "object") {
+      const nested = value as Record<string, unknown>;
+      // Nested wrapper again (e.g. value = { texto: "..." })
+      if (key !== "texto" && typeof nested.texto === "string") {
+        const fromNested = parseMealOptionsPreview(nested);
+        if (fromNested) return fromNested;
+      }
       const parsed = mealOptionsResponseSchema.safeParse(value);
       if (parsed.success) return parsed.data;
     }
@@ -110,13 +130,11 @@ export function QueuedMenuGenerator({
         }
 
         const mealParsed = asObject ? parseMealOptionsPreview(asObject) : null;
-        setResultJson(
-          mealParsed
-            ? JSON.stringify(mealParsed, null, 2)
-            : typeof result === "string"
-              ? result
-              : JSON.stringify(result ?? {}, null, 2)
-        );
+        // Save/unwrapped meal JSON for validateAndSaveMenu — not the worker wrapper
+        // ({ texto, modelo_usado }). Fallback to raw payload only if unwrap fails.
+        const rawFallback =
+          typeof result === "string" ? result : JSON.stringify(result ?? {}, null, 2);
+        setResultJson(mealParsed ? JSON.stringify(mealParsed, null, 2) : rawFallback);
         setResultPreview(asObject ?? { raw: result });
         setPhase("done");
         return true;

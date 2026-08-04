@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ManualAiFlow } from "@/components/manual-ai/ManualAiFlow";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { parseAndSaveDiet, saveDietPlan } from "@/app/actions/diet";
@@ -10,23 +11,35 @@ import { parseAndSaveDiet, saveDietPlan } from "@/app/actions/diet";
 interface DietEditorProps {
   patientId: string;
   initialRawText?: string;
+  initialTitle?: string;
 }
 
-function titleFromRawText(rawText: string): string {
-  const firstLine = rawText
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .find((line) => line.length > 0);
-  return firstLine || "Dieta cargada";
+function defaultDietTitle(): string {
+  const today = new Date().toLocaleDateString("es-MX", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  return `Dieta cargada ${today}`;
 }
 
-export function DietEditor({ patientId, initialRawText = "" }: DietEditorProps) {
+export function DietEditor({
+  patientId,
+  initialRawText = "",
+  initialTitle = "",
+}: DietEditorProps) {
+  const [dietTitle, setDietTitle] = useState(initialTitle);
   const [rawText, setRawText] = useState(initialRawText);
   const [pastedResponse, setPastedResponse] = useState("");
   const [validatedData, setValidatedData] = useState<Record<string, unknown> | null>(null);
   const [savingBasic, setSavingBasic] = useState(false);
   const [savingParsed, setSavingParsed] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+
+  function resolveTitle(): string {
+    const trimmed = dietTitle.trim();
+    return trimmed || defaultDietTitle();
+  }
 
   async function handleSaveBasic() {
     if (!rawText.trim()) return;
@@ -35,7 +48,7 @@ export function DietEditor({ patientId, initialRawText = "" }: DietEditorProps) 
     try {
       await saveDietPlan({
         patientId,
-        title: titleFromRawText(rawText),
+        title: resolveTitle(),
         rawText: rawText.trim(),
       });
       setMessage("Dieta guardada como activa.");
@@ -62,6 +75,16 @@ export function DietEditor({ patientId, initialRawText = "" }: DietEditorProps) 
 
   return (
     <div className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="diet-title">Nombre de la dieta</Label>
+        <Input
+          id="diet-title"
+          value={dietTitle}
+          onChange={(e) => setDietTitle(e.target.value)}
+          placeholder="Ej. Menú Keto Semana 1"
+        />
+      </div>
+
       <div className="space-y-2">
         <Label htmlFor="raw-diet">Pega la dieta prescrita (texto)</Label>
         <Textarea
