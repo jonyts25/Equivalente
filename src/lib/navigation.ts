@@ -12,6 +12,7 @@ export const ADMIN_NAV = [
 export const NUTRIOLOGO_NAV = [
   { href: "/nutriologo", label: "Inicio" },
   { href: "/nutriologo/pacientes", label: "Pacientes" },
+  { href: "/nutriologo/dietas", label: "Dietas" },
   { href: "/nutriologo/equivalencias", label: "Equivalencias" },
   { href: "/nutriologo/ia-local", label: "IA local" },
 ];

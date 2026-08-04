@@ -1,9 +1,18 @@
+import { assertDevAiApiAccess } from "@/lib/ai/dev-api-access";
 import { assertContextualAiAccess } from "@/lib/ai/contextual-ai-access";
 import { runEquivalenteContextualPilot } from "@/lib/ai/ollama-equivalente-contextual";
 import type { EquivalenteIntention } from "@/lib/ai/nutrition-safety";
 import { jsonUtf8 } from "@/lib/api/json-response";
 
 export async function POST(request: Request) {
+  const devAccess = await assertDevAiApiAccess();
+  if (!devAccess.ok) {
+    return jsonUtf8(
+      { ok: false, provider: "ollama_local", error: devAccess.error },
+      { status: devAccess.status }
+    );
+  }
+
   let body: {
     patientId?: string;
     dietPlanId?: string;

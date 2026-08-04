@@ -1,9 +1,18 @@
+import { assertDevAiApiAccess } from "@/lib/ai/dev-api-access";
 import { assertProgressAnalysisAccess } from "@/lib/progress/access";
 import { getPatientProgress, createProgressAiAnalysis } from "@/app/actions/progress";
 import { runProgressAnalysisPilot } from "@/lib/ai/progress-analysis";
 import { jsonUtf8 } from "@/lib/api/json-response";
 
 export async function POST(request: Request) {
+  const devAccess = await assertDevAiApiAccess();
+  if (!devAccess.ok) {
+    return jsonUtf8(
+      { ok: false, provider: "ollama_local", error: devAccess.error },
+      { status: devAccess.status }
+    );
+  }
+
   let body: {
     patientId?: string;
     rangeStart?: string;

@@ -4,12 +4,13 @@ import { parseDietResponseSchema } from "./parse-diet.schema";
 import { mealOptionsResponseSchema } from "./meal-options.schema";
 import { cravingCheckResponseSchema } from "./craving-check.schema";
 import { shoppingListResponseSchema } from "./shopping-list.schema";
+import { weekMenuResponseSchema } from "./week-menu.schema";
 
 export const TASK_SCHEMAS: Record<AiTaskType, z.ZodType> = {
   parse_diet: parseDietResponseSchema,
   generate_meal_options: mealOptionsResponseSchema,
   generate_day_menu: mealOptionsResponseSchema,
-  generate_week_menu: mealOptionsResponseSchema,
+  generate_week_menu: weekMenuResponseSchema,
   craving_check: cravingCheckResponseSchema,
   ingredients_menu: mealOptionsResponseSchema,
   shopping_list: shoppingListResponseSchema,
@@ -17,5 +18,6 @@ export const TASK_SCHEMAS: Record<AiTaskType, z.ZodType> = {
 
 export * from "./parse-diet.schema";
 export * from "./meal-options.schema";
+export * from "./week-menu.schema";
 export * from "./craving-check.schema";
 export * from "./shopping-list.schema";

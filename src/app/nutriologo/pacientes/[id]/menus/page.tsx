@@ -3,6 +3,8 @@ import { redirect, notFound } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IaDraftMenuCard } from "@/components/menus/IaDraftMenuCard";
+import { MealOptionsDisplay } from "@/components/menus/MealOptionsDisplay";
+import { WeekMenuDisplay } from "@/components/menus/WeekMenuDisplay";
 import { MenuCard } from "@/components/menus/MenuCard";
 import { MenuActions } from "@/components/menus/MenuActions";
 import { MenuGenerator } from "@/components/menus/MenuGenerator";
@@ -29,6 +31,20 @@ export default async function PacienteMenusPage({
   if (!(await supabase.from("patients").select("id").eq("id", id).single()).data) notFound();
 
   const ctx = await getPatientPromptContext(id);
+  const hasActiveDiet = ctx.dietSummary !== "Sin dieta activa configurada.";
+
+  const sharedContext = {
+    patientName: ctx.patientName,
+    mealSlot: "Comida",
+    dietSummary: ctx.dietSummary,
+    equivalences: ctx.equivalences,
+    restrictions: ctx.restrictions,
+    preferences: ctx.preferences,
+    forbiddenFoods: ctx.forbiddenFoods,
+    triggerFoods: ctx.triggerFoods,
+    forbiddenTreats: ctx.forbiddenTreats,
+    precisionMode: ctx.precisionMode,
+  };
 
   let query = supabase
     .from("generated_menus")
@@ -70,7 +86,7 @@ export default async function PacienteMenusPage({
           <CardTitle className="text-base">Generar opciones equivalentes</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {ctx.dietSummary === "Sin dieta activa configurada." ? (
+          {!hasActiveDiet ? (
             <div className="space-y-2 text-sm">
               <p className="text-amber-800">
                 Este paciente no tiene una dieta activa cargada
@@ -94,18 +110,47 @@ export default async function PacienteMenusPage({
                 task="generate_meal_options"
                 title="Opciones equivalentes"
                 defaultStatus="draft"
-                context={{
-                  patientName: ctx.patientName,
-                  mealSlot: "Comida",
-                  dietSummary: ctx.dietSummary,
-                  equivalences: ctx.equivalences,
-                  restrictions: ctx.restrictions,
-                  preferences: ctx.preferences,
-                  forbiddenFoods: ctx.forbiddenFoods,
-                  triggerFoods: ctx.triggerFoods,
-                  forbiddenTreats: ctx.forbiddenTreats,
-                  precisionMode: ctx.precisionMode,
-                }}
+                context={sharedContext}
+              />
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Generar menú semanal</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {!hasActiveDiet ? (
+            <div className="space-y-2 text-sm">
+              <p className="text-amber-800">
+                Este paciente no tiene una dieta activa cargada
+              </p>
+              <Link
+                href={`/nutriologo/pacientes/${id}/dieta`}
+                className="inline-block font-medium text-emerald-700 underline"
+              >
+                Ir a cargar dieta →
+              </Link>
+            </div>
+          ) : (
+            <>
+              <Card className="border-emerald-100 bg-emerald-50/60 shadow-none">
+                <CardContent className="py-3 text-sm text-emerald-900">
+                  Usando dieta: <strong>{ctx.dietTitle ?? "Dieta activa"}</strong>
+                </CardContent>
+              </Card>
+              <p className="text-xs text-slate-500">
+                Plan de 7 días (Lunes a Domingo) rotando opciones de la dieta base. Distinto de
+                las variaciones puntuales de un solo tiempo de comida.
+              </p>
+              <MenuGenerator
+                patientId={id}
+                task="generate_week_menu"
+                title="Menú semanal"
+                defaultStatus="draft"
+                context={sharedContext}
               />
             </>
           )}
@@ -117,12 +162,6 @@ export default async function PacienteMenusPage({
         className="block rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm font-medium text-emerald-800"
       >
         + Generar menú (modo manual ChatGPT)
-      </Link>
-      <Link
-        href="/nutriologo/ia-local"
-        className="block rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700"
-      >
-        Probar IA local contextual y guardar borradores →
       </Link>
 
       <div className="space-y-3">
@@ -144,7 +183,11 @@ export default async function PacienteMenusPage({
           }
           return (
             <MenuCard key={menu.id} title={menu.title} status={menu.status} explanation={menu.explanation}>
-              <pre className="max-h-32 overflow-auto text-xs">{JSON.stringify(menu.content_json, null, 2)}</pre>
+              {menu.generation_type === "week_menu" ? (
+                <WeekMenuDisplay content={menu.content_json} />
+              ) : (
+                <MealOptionsDisplay content={menu.content_json} />
+              )}
               <div className="mt-3">
                 <MenuActions menuId={menu.id} role={role} patientId={id} />
               </div>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { listPatientsForIaPanel } from "@/app/actions/equivalente-ia";
 import { AppShell } from "@/components/layout/AppShell";
 import { OllamaLocalPanel } from "@/components/admin/OllamaLocalPanel";
@@ -12,11 +12,14 @@ import {
   getOllamaModelSpanish,
   getOllamaTimeoutMs,
 } from "@/lib/ai/config";
+import { isOllamaDevApiEnabled } from "@/lib/ai/dev-api-access";
 import { ollamaHealth } from "@/lib/ai/ollama-client";
 import { getCurrentProfile } from "@/lib/auth/session";
 import { ADMIN_NAV } from "@/lib/navigation";
 
 export default async function AdminIaLocalPage() {
+  if (!isOllamaDevApiEnabled()) notFound();
+
   const profile = await getCurrentProfile();
   if (!profile || profile.role !== "admin") redirect("/login");
 

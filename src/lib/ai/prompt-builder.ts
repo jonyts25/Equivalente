@@ -2,6 +2,7 @@ import type { AiTaskType, PromptContext } from "./types";
 import {
   buildParseDietPrompt,
   buildMealOptionsPrompt,
+  buildWeekMenuPrompt,
   buildCravingCheckPrompt,
   buildShoppingListPrompt,
 } from "./prompts";
@@ -12,11 +13,22 @@ export function buildPrompt(task: AiTaskType, context: PromptContext): string {
       return buildParseDietPrompt(String(context.rawDiet ?? ""));
     case "generate_meal_options":
     case "generate_day_menu":
-    case "generate_week_menu":
     case "ingredients_menu":
       return buildMealOptionsPrompt({
         patientName: String(context.patientName ?? "Paciente"),
         mealSlot: String(context.mealSlot ?? "Comida"),
+        dietSummary: String(context.dietSummary ?? ""),
+        equivalences: String(context.equivalences ?? ""),
+        restrictions: String(context.restrictions ?? ""),
+        preferences: String(context.preferences ?? ""),
+        forbiddenFoods: String(context.forbiddenFoods ?? ""),
+        triggerFoods: String(context.triggerFoods ?? ""),
+        forbiddenTreats: String(context.forbiddenTreats ?? ""),
+        precisionMode: String(context.precisionMode ?? "normal"),
+      });
+    case "generate_week_menu":
+      return buildWeekMenuPrompt({
+        patientName: String(context.patientName ?? "Paciente"),
         dietSummary: String(context.dietSummary ?? ""),
         equivalences: String(context.equivalences ?? ""),
         restrictions: String(context.restrictions ?? ""),

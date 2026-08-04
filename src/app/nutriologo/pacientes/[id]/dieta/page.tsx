@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
+import { listDietTemplates } from "@/app/actions/diet-templates";
 import { AppShell } from "@/components/layout/AppShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AssignDietTemplateForm } from "@/components/nutritionist/AssignDietTemplateForm";
 import { DietEditor } from "@/components/nutritionist/DietEditor";
 import { getCurrentProfile } from "@/lib/auth/session";
 import { NUTRIOLOGO_NAV } from "@/lib/navigation";
@@ -23,6 +25,8 @@ export default async function PacienteDietaPage({ params }: { params: Promise<{ 
     .eq("status", "active")
     .maybeSingle();
 
+  const templates = await listDietTemplates();
+
   return (
     <AppShell title={`Dieta — ${patient.full_name}`} nav={NUTRIOLOGO_NAV} currentPath="/nutriologo/pacientes">
       {diet && (
@@ -33,9 +37,25 @@ export default async function PacienteDietaPage({ params }: { params: Promise<{ 
           </CardContent>
         </Card>
       )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Asignar desde biblioteca</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-3 text-xs text-slate-500">
+            Elige una plantilla guardada y asígnala como dieta activa de este paciente.
+          </p>
+          <AssignDietTemplateForm patientId={id} templates={templates} />
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader><CardTitle className="text-base">Cargar / estructurar dieta</CardTitle></CardHeader>
         <CardContent>
+          <p className="mb-3 text-xs text-slate-500">
+            Alternativa para dietas puntuales que no quieras guardar en la biblioteca.
+          </p>
           <DietEditor
             patientId={id}
             initialRawText={diet?.raw_text ?? ""}
