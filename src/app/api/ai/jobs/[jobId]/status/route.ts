@@ -26,7 +26,9 @@ export async function GET(
   const supabase = await createClient();
   const { data: job, error } = await supabase
     .from("ai_jobs")
-    .select("id, app, tipo, status, resultado, error, payload, created_at, updated_at, processed_at")
+    .select(
+      "id, app, tipo, status, resultado, error, payload, created_by, created_at, updated_at, processed_at"
+    )
     .eq("id", jobId)
     .maybeSingle();
 
@@ -42,8 +44,9 @@ export async function GET(
   }
 
   const payload = (job.payload ?? {}) as Record<string, unknown>;
-  const ownerId = typeof payload.userId === "string" ? payload.userId : null;
-  const isOwner = ownerId === profile.id;
+  const payloadUserId = typeof payload.userId === "string" ? payload.userId : null;
+  const isOwner =
+    job.created_by === profile.id || payloadUserId === profile.id;
   const isStaff = profile.role === "admin" || profile.role === "nutritionist";
 
   if (!isOwner && !isStaff) {
