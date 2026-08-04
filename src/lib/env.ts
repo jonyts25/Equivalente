@@ -31,6 +31,11 @@ export function getSupabaseAnonKey(): string {
   return process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
 }
 
+/** Server-only. Never expose with NEXT_PUBLIC_ prefix. */
+export function getSupabaseServiceRoleKey(): string {
+  return process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
+}
+
 export function hasSupabaseConfig(): boolean {
   return Boolean(getSupabaseUrl() && getSupabaseAnonKey());
 }

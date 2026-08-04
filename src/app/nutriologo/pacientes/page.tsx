@@ -27,6 +27,12 @@ export default async function NutriologoPacientesPage() {
 
   return (
     <AppShell title="Pacientes" nav={NUTRIOLOGO_NAV} currentPath="/nutriologo/pacientes">
+      <Link
+        href="/nutriologo/pacientes/nuevo"
+        className="block rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm font-medium text-emerald-800"
+      >
+        + Nuevo paciente
+      </Link>
       <Card>
         <CardHeader><CardTitle className="text-base">Pacientes asignados</CardTitle></CardHeader>
         <CardContent className="space-y-2">
