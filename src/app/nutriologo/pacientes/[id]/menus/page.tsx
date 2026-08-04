@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IaDraftMenuCard } from "@/components/menus/IaDraftMenuCard";
 import { MenuCard } from "@/components/menus/MenuCard";
 import { MenuActions } from "@/components/menus/MenuActions";
+import { MenuGenerator } from "@/components/menus/MenuGenerator";
 import { isIaLocalContextualDraft } from "@/lib/ai/contextual-draft";
 import { getCurrentProfile } from "@/lib/auth/session";
+import { getPatientPromptContext } from "@/lib/data/patient-context";
 import { NUTRIOLOGO_NAV } from "@/lib/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { MenuStatus } from "@/types/database";
@@ -24,6 +27,8 @@ export default async function PacienteMenusPage({
 
   const supabase = await createClient();
   if (!(await supabase.from("patients").select("id").eq("id", id).single()).data) notFound();
+
+  const ctx = await getPatientPromptContext(id);
 
   let query = supabase
     .from("generated_menus")
@@ -59,6 +64,32 @@ export default async function PacienteMenusPage({
           </Link>
         ))}
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Generar opciones equivalentes</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <MenuGenerator
+            patientId={id}
+            task="generate_meal_options"
+            title="Opciones equivalentes"
+            defaultStatus="draft"
+            context={{
+              patientName: ctx.patientName,
+              mealSlot: "Comida",
+              dietSummary: ctx.dietSummary,
+              equivalences: ctx.equivalences,
+              restrictions: ctx.restrictions,
+              preferences: ctx.preferences,
+              forbiddenFoods: ctx.forbiddenFoods,
+              triggerFoods: ctx.triggerFoods,
+              forbiddenTreats: ctx.forbiddenTreats,
+              precisionMode: ctx.precisionMode,
+            }}
+          />
+        </CardContent>
+      </Card>
 
       <Link
         href={`/nutriologo/pacientes/${id}/menus/manual`}
