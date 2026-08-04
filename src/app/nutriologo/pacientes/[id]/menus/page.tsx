@@ -69,25 +69,46 @@ export default async function PacienteMenusPage({
         <CardHeader>
           <CardTitle className="text-base">Generar opciones equivalentes</CardTitle>
         </CardHeader>
-        <CardContent>
-          <MenuGenerator
-            patientId={id}
-            task="generate_meal_options"
-            title="Opciones equivalentes"
-            defaultStatus="draft"
-            context={{
-              patientName: ctx.patientName,
-              mealSlot: "Comida",
-              dietSummary: ctx.dietSummary,
-              equivalences: ctx.equivalences,
-              restrictions: ctx.restrictions,
-              preferences: ctx.preferences,
-              forbiddenFoods: ctx.forbiddenFoods,
-              triggerFoods: ctx.triggerFoods,
-              forbiddenTreats: ctx.forbiddenTreats,
-              precisionMode: ctx.precisionMode,
-            }}
-          />
+        <CardContent className="space-y-4">
+          {ctx.dietSummary === "Sin dieta activa configurada." ? (
+            <div className="space-y-2 text-sm">
+              <p className="text-amber-800">
+                Este paciente no tiene una dieta activa cargada
+              </p>
+              <Link
+                href={`/nutriologo/pacientes/${id}/dieta`}
+                className="inline-block font-medium text-emerald-700 underline"
+              >
+                Ir a cargar dieta →
+              </Link>
+            </div>
+          ) : (
+            <>
+              <Card className="border-emerald-100 bg-emerald-50/60 shadow-none">
+                <CardContent className="py-3 text-sm text-emerald-900">
+                  Usando dieta: <strong>{ctx.dietTitle ?? "Dieta activa"}</strong>
+                </CardContent>
+              </Card>
+              <MenuGenerator
+                patientId={id}
+                task="generate_meal_options"
+                title="Opciones equivalentes"
+                defaultStatus="draft"
+                context={{
+                  patientName: ctx.patientName,
+                  mealSlot: "Comida",
+                  dietSummary: ctx.dietSummary,
+                  equivalences: ctx.equivalences,
+                  restrictions: ctx.restrictions,
+                  preferences: ctx.preferences,
+                  forbiddenFoods: ctx.forbiddenFoods,
+                  triggerFoods: ctx.triggerFoods,
+                  forbiddenTreats: ctx.forbiddenTreats,
+                  precisionMode: ctx.precisionMode,
+                }}
+              />
+            </>
+          )}
         </CardContent>
       </Card>
 

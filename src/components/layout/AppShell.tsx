@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { LogoutButton } from "@/components/layout/LogoutButton";
+import { getCurrentProfile, roleLabel } from "@/lib/auth/session";
 
 interface NavItem {
   href: string;
@@ -9,13 +10,17 @@ interface NavItem {
 
 interface AppShellProps {
   title: string;
-  subtitle?: string;
   nav: NavItem[];
   children: React.ReactNode;
   currentPath?: string;
 }
 
-export function AppShell({ title, subtitle, nav, children, currentPath }: AppShellProps) {
+export async function AppShell({ title, nav, children, currentPath }: AppShellProps) {
+  const profile = await getCurrentProfile();
+  const sessionLabel = profile
+    ? `${roleLabel(profile.role)}: ${profile.full_name?.trim() || "Usuario"}`
+    : null;
+
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/95 backdrop-blur">
@@ -28,8 +33,10 @@ export function AppShell({ title, subtitle, nav, children, currentPath }: AppShe
           </div>
           <div className="flex items-center gap-2 text-right">
             <div>
-              <p className="text-sm font-medium">{title}</p>
-              {subtitle && <p className="text-xs text-slate-500">{subtitle}</p>}
+              {sessionLabel && (
+                <p className="text-sm font-medium text-slate-800">{sessionLabel}</p>
+              )}
+              <p className="text-xs text-slate-500">{title}</p>
             </div>
             <LogoutButton />
           </div>

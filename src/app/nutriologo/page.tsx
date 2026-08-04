@@ -25,7 +25,7 @@ export default async function NutriologoDashboard() {
   }
 
   return (
-    <AppShell title="Nutriólogo" subtitle={profile.full_name ?? ""} nav={NUTRIOLOGO_NAV} currentPath="/nutriologo">
+    <AppShell title="Inicio" nav={NUTRIOLOGO_NAV} currentPath="/nutriologo">
       <DisclaimerBanner />
       <Card>
         <CardHeader><CardTitle className="text-base">Tus pacientes</CardTitle></CardHeader>

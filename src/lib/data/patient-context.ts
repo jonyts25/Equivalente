@@ -37,8 +37,15 @@ export async function getPatientPromptContext(patientId: string) {
     .select("*")
     .eq("patient_id", patientId);
 
+  const mealSlots = Array.isArray(dietPlan?.meal_slots) ? dietPlan.meal_slots : [];
   const dietSummary = dietPlan
-    ? `${dietPlan.title}\n${dietPlan.raw_text ?? ""}\n${JSON.stringify(dietPlan.meal_slots ?? [], null, 2)}`
+    ? [
+        dietPlan.title,
+        dietPlan.raw_text ?? "",
+        mealSlots.length > 0 ? JSON.stringify(mealSlots, null, 2) : null,
+      ]
+        .filter((part) => part != null && String(part).trim() !== "")
+        .join("\n")
     : "Sin dieta activa configurada.";
 
   const equivText =
@@ -69,6 +76,7 @@ export async function getPatientPromptContext(patientId: string) {
   return {
     patient,
     dietPlan,
+    dietTitle: dietPlan?.title ?? null,
     patientName: patient?.full_name ?? "Paciente",
     precisionMode: patient?.precision_mode ?? "normal",
     dietSummary,

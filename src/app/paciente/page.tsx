@@ -6,10 +6,10 @@ import { requirePatientContext } from "@/lib/auth/patient-session";
 import { PACIENTE_NAV } from "@/lib/navigation";
 
 export default async function PacienteDashboard() {
-  const { profile, patient } = await requirePatientContext();
+  const { patient } = await requirePatientContext();
 
   return (
-    <AppShell title="Paciente" subtitle={profile.full_name ?? patient.full_name} nav={PACIENTE_NAV} currentPath="/paciente">
+    <AppShell title="Inicio" nav={PACIENTE_NAV} currentPath="/paciente">
       <DisclaimerBanner />
       <Card>
         <CardHeader><CardTitle className="text-base">Bienvenido/a, {patient.full_name}</CardTitle></CardHeader>

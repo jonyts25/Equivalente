@@ -19,7 +19,7 @@ export default async function AdminDashboard() {
   ]);
 
   return (
-    <AppShell title="Admin" subtitle={profile.full_name ?? "Administrador"} nav={ADMIN_NAV} currentPath="/admin">
+    <AppShell title="Inicio" nav={ADMIN_NAV} currentPath="/admin">
       <DisclaimerBanner />
       <div className="grid gap-3 sm:grid-cols-3">
         <Card><CardHeader><CardTitle className="text-base">Nutriólogos</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{nutritionists ?? 0}</p></CardContent></Card>

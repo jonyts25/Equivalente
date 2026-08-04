@@ -4,7 +4,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { prepareAiTask } from "@/app/actions/ai";
 import { validateAndSaveMenu } from "@/app/actions/menus";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  mealOptionsResponseSchema,
+  type MealOptionsResponse,
+} from "@/lib/ai/schemas/meal-options.schema";
 import type { ManualAiTaskType, MenuStatus } from "@/types/database";
 
 interface QueuedMenuGeneratorProps {
@@ -23,6 +29,39 @@ function isTerminalSuccess(status: string): boolean {
 
 function isTerminalError(status: string): boolean {
   return status === "error" || status === "failed";
+}
+
+function parseMealOptionsPreview(
+  preview: Record<string, unknown>
+): MealOptionsResponse | null {
+  const direct = mealOptionsResponseSchema.safeParse(preview);
+  if (direct.success) return direct.data;
+
+  // Worker may wrap the payload (e.g. { result: {...} } or JSON string fields).
+  for (const key of ["result", "data", "content", "raw"] as const) {
+    const value = preview[key];
+    if (typeof value === "string") {
+      try {
+        const parsed = mealOptionsResponseSchema.safeParse(JSON.parse(value));
+        if (parsed.success) return parsed.data;
+      } catch {
+        /* ignore */
+      }
+    } else if (value && typeof value === "object") {
+      const parsed = mealOptionsResponseSchema.safeParse(value);
+      if (parsed.success) return parsed.data;
+    }
+  }
+
+  return null;
+}
+
+function confidenceBadgeVariant(
+  confidence: "low" | "medium" | "high"
+): "default" | "warning" | "secondary" {
+  if (confidence === "high") return "default";
+  if (confidence === "medium") return "warning";
+  return "secondary";
 }
 
 export function QueuedMenuGenerator({
@@ -54,14 +93,31 @@ export function QueuedMenuGenerator({
     (status: string, result: unknown, errMsg?: string | null) => {
       if (isTerminalSuccess(status)) {
         stopPolling();
-        const asText =
-          typeof result === "string" ? result : JSON.stringify(result ?? {}, null, 2);
-        setResultJson(asText);
-        setResultPreview(
-          result && typeof result === "object" && !Array.isArray(result)
-            ? (result as Record<string, unknown>)
-            : { raw: result }
+        let asObject: Record<string, unknown> | null = null;
+        if (typeof result === "string") {
+          try {
+            const parsed = JSON.parse(result) as unknown;
+            if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+              asObject = parsed as Record<string, unknown>;
+            }
+          } catch {
+            asObject = { raw: result };
+          }
+        } else if (result && typeof result === "object" && !Array.isArray(result)) {
+          asObject = result as Record<string, unknown>;
+        } else {
+          asObject = { raw: result };
+        }
+
+        const mealParsed = asObject ? parseMealOptionsPreview(asObject) : null;
+        setResultJson(
+          mealParsed
+            ? JSON.stringify(mealParsed, null, 2)
+            : typeof result === "string"
+              ? result
+              : JSON.stringify(result ?? {}, null, 2)
         );
+        setResultPreview(asObject ?? { raw: result });
         setPhase("done");
         return true;
       }
@@ -181,6 +237,9 @@ export function QueuedMenuGenerator({
     }
   }
 
+  const parsedOptions =
+    phase === "done" && resultPreview ? parseMealOptionsPreview(resultPreview) : null;
+
   return (
     <div className="space-y-4">
       <Alert className="border-emerald-200 bg-emerald-50">
@@ -226,9 +285,79 @@ export function QueuedMenuGenerator({
       {phase === "done" && resultPreview && (
         <div className="space-y-3">
           <p className="text-sm font-medium text-emerald-800">Resultado listo</p>
-          <pre className="max-h-72 overflow-auto rounded-lg border bg-white p-3 text-xs">
-            {JSON.stringify(resultPreview, null, 2)}
-          </pre>
+
+          {parsedOptions?.options && parsedOptions.options.length > 0 ? (
+            <div className="space-y-3">
+              {parsedOptions.message && (
+                <p className="text-sm text-slate-600">{parsedOptions.message}</p>
+              )}
+              {parsedOptions.options.map((option, index) => (
+                <Card key={`${option.title}-${index}`}>
+                  <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0">
+                    <div className="space-y-2">
+                      <CardTitle className="text-base">{option.title}</CardTitle>
+                      <div className="flex flex-wrap gap-1.5">
+                        <Badge variant="outline">{option.meal_slot}</Badge>
+                        <Badge variant={confidenceBadgeVariant(option.confidence)}>
+                          {option.confidence}
+                        </Badge>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3 text-sm">
+                    <ul className="space-y-1">
+                      {option.ingredients.map((ing, i) => (
+                        <li key={`${ing.name}-${i}`}>
+                          <span className="font-medium">{ing.name}</span>
+                          {ing.portion ? ` — ${ing.portion}` : ""}
+                          {ing.notes ? (
+                            <span className="text-slate-500"> ({ing.notes})</span>
+                          ) : null}
+                        </li>
+                      ))}
+                    </ul>
+
+                    {option.preparation && (
+                      <p className="text-slate-700">{option.preparation}</p>
+                    )}
+
+                    {option.replaces && (
+                      <p className="text-xs text-slate-500">Reemplaza: {option.replaces}</p>
+                    )}
+
+                    {option.equivalences.length > 0 && (
+                      <ul className="space-y-1 text-xs text-slate-500">
+                        {option.equivalences.map((eq, i) => (
+                          <li key={`${eq.base}-${eq.replacement}-${i}`}>
+                            {eq.base} → {eq.replacement}
+                            {eq.explanation ? `: ${eq.explanation}` : ""}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+
+                    {option.warnings && option.warnings.length > 0 && (
+                      <Alert>
+                        <AlertTitle>Advertencias</AlertTitle>
+                        <AlertDescription>
+                          <ul className="list-disc space-y-1 pl-4">
+                            {option.warnings.map((warning, i) => (
+                              <li key={`${warning}-${i}`}>{warning}</li>
+                            ))}
+                          </ul>
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <pre className="max-h-72 overflow-auto rounded-lg border bg-white p-3 text-xs">
+              {JSON.stringify(resultPreview, null, 2)}
+            </pre>
+          )}
+
           <div className="flex flex-wrap gap-2">
             <Button type="button" onClick={() => void handleSave()} disabled={saving || !resultJson}>
               {saving ? "Guardando..." : "Guardar resultado"}
