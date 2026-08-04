@@ -5,22 +5,25 @@ import { roleHomePath } from "@/lib/auth/session";
 import { DisclaimerBanner } from "@/components/layout/DisclaimerBanner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { hasSupabaseConfig } from "@/lib/env";
 import type { UserRole } from "@/types/database";
 
 export default async function HomePage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  if (hasSupabaseConfig()) {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  if (user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-    if (profile?.role) {
-      redirect(roleHomePath(profile.role as UserRole));
+    if (user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+      if (profile?.role) {
+        redirect(roleHomePath(profile.role as UserRole));
+      }
     }
   }
 
